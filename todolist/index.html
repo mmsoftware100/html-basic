@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To Do List</title>
+</head>
+<body>
+    <h1>To Do List</h1>
+    <span id="totalCount">3</span>
+    <br />
+
+    <lable for="task_input">Task Input</lable>
+    <input type="text" id="task_input" name="task_input" />
+    <br />
+    <br />
+    <button id="insert_button">Add Task</button>
+    <br />
+    <br />
+    <input type="checkbox" checked/> <label for="vehicle1"> <del>Learn HTML</del></label><br>
+    <input type="checkbox" /> <label for="vehicle1"> Learn CSS</label><br>
+    <input type="checkbox" /> <label for="vehicle1"> Learn JS</label><br>
+    
+
+
+    <script>
+        var insertButton = document.getElementById("insert_button");
+
+        console.log("Hello");
+        insertButton.addEventListener("click", function() {
+            console.log("Button clicked!");
+            var taskInput = document.getElementById("task_input");
+            var data = taskInput.value;
+            console.log(data);
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+
+            const label  = document.createElement('label');
+            label.textContent = data;
+
+            const breakLine = document.createElement('br');
+
+            document.body.appendChild(checkbox);
+            document.body.appendChild(label);
+            document.body.appendChild(breakLine);
+
+            taskInput.value = ""; // Clear the input field after adding the task
+            
+        });
+        console.log("World");
+
+
+
+
+
+        // var taskInput = document.getElementById("task_input");
+        // var data = taskInput.value;
+        // console.log(data);
+
+
+
+
+        // var x = 6;
+        // var y = 7;
+        // var z = x+y;
+        // console.log(z);
+        // console.log("Hello, World!");
+        // var totalCountElement = document.getElementById("totalCount");
+        // console.log(totalCountElement);
+        // // update inner HTML of the totalCount element
+        // // totalCountElement.innerHTML = "6 - this is updated by JS";
+        // var count = totalCountElement.innerHTML;
+        // console.log(typeof count);
+
+
+
+
+    </script>
+</body>
+</html>
