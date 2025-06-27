@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yangon Weather</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .weather-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .current-weather {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .temperature {
+            font-size: 3em;
+            font-weight: bold;
+        }
+        
+        .weather-details {
+            text-align: right;
+        }
+        
+        .hourly-forecast {
+            margin-top: 20px;
+        }
+        
+        .hourly-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .hourly-item:last-child {
+            border-bottom: none;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .error {
+            color: #e74c3c;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .weather-icon {
+            font-size: 2em;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Yangon Weather</h1>
+    
+    <div class="weather-container">
+        <div id="current-weather" class="current-weather">
+            <!-- Current weather will be inserted here -->
+        </div>
+        
+        <h2>Hourly Forecast</h2>
+        <div id="hourly-forecast" class="hourly-forecast">
+            <!-- Hourly forecast will be inserted here -->
+        </div>
+        
+        <div id="loading" class="loading">
+            Loading weather data...
+        </div>
+        
+        <div id="error" class="error" style="display: none;">
+            Could not load weather data. Please try again later.
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Coordinates for Yangon, Myanmar
+            const latitude = 16.8409;
+            const longitude = 96.1735;
+            
+            // Get current time in ISO format (YYYY-MM-DDTHH:MM)
+            const now = new Date();
+            const currentHour = now.getHours();
+            
+            // API URL for Yangon
+            const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m&timezone=auto`;
+            
+            fetch(apiUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Hide loading message
+                    document.getElementById('loading').style.display = 'none';
+                    
+                    // Display current weather
+                    displayCurrentWeather(data);
+                    
+                    // Display hourly forecast
+                    displayHourlyForecast(data, currentHour);
+                })
+                .catch(error => {
+                    console.error('Error fetching weather data:', error);
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('error').style.display = 'block';
+                });
+        });
+        
+        function displayCurrentWeather(data) {
+            const current = data.current;
+            const currentElement = document.getElementById('current-weather');
+            
+            const weatherIcon = getWeatherIcon(current.temperature_2m, current.relative_humidity_2m);
+            
+            currentElement.innerHTML = `
+                <div>
+                    <span class="weather-icon">${weatherIcon}</span>
+                    <span class="temperature">${current.temperature_2m}°C</span>
+                </div>
+                <div class="weather-details">
+                    <div>Humidity: ${current.relative_humidity_2m}%</div>
+                    <div>Wind: ${current.wind_speed_10m} km/h</div>
+                    <div>Updated: ${new Date().toLocaleTimeString()}</div>
+                </div>
+            `;
+        }
+        
+        function displayHourlyForecast(data, currentHour) {
+            const hourly = data.hourly;
+            const hourlyElement = document.getElementById('hourly-forecast');
+            
+            // Show only the next 12 hours of forecast
+            let hourlyHTML = '';
+            for (let i = 0; i < 12; i++) {
+                const hourIndex = currentHour + i;
+                if (hourIndex >= hourly.time.length) break;
+                
+                const time = new Date(hourly.time[hourIndex]);
+                const hour = time.getHours();
+                const ampm = hour >= 12 ? 'PM' : 'AM';
+                const displayHour = hour % 12 || 12;
+                
+                const weatherIcon = getWeatherIcon(
+                    hourly.temperature_2m[hourIndex],
+                    hourly.relative_humidity_2m[hourIndex]
+                );
+                
+                hourlyHTML += `
+                    <div class="hourly-item">
+                        <div>${displayHour} ${ampm}</div>
+                        <div>${weatherIcon} ${hourly.temperature_2m[hourIndex]}°C</div>
+                        <div>${hourly.relative_humidity_2m[hourIndex]}% humidity</div>
+                        <div>${hourly.wind_speed_10m[hourIndex]} km/h wind</div>
+                    </div>
+                `;
+            }
+            
+            hourlyElement.innerHTML = hourlyHTML;
+        }
+        
+        function getWeatherIcon(temperature, humidity) {
+            // Simple emoji-based weather icons based on temperature and humidity
+            if (temperature > 30) {
+                return humidity > 70 ? '🌧️' : '☀️';
+            } else if (temperature > 20) {
+                return humidity > 80 ? '🌦️' : '⛅';
+            } else {
+                return '🌤️';
+            }
+        }
+    </script>
+</body>
+</html>
